@@ -17,20 +17,21 @@ const extractReadme=raw=>{
 	}
 	return readme;
 }
+/*
 const replaceChapterNumber=str=>{
 	return str
-	.replace(/<h4><font color=navy>第(.+?)回<\/br>/,(m,m1)=>new ChineseNumber(m1).toInteger()+'|')
-	.replace(/<h4><font color=navy>卷第([一二三四五六七八九十百]+)/,(m,m1)=>new ChineseNumber(m1).toInteger()+'|')
-
+	.replace(/<h4><font color=navy>卷?第([一二三四五六七八九十百千]+)/,(m,m1)=>new ChineseNumber(m1).toInteger()+'|')
 }
+*/
 const extractContent=raw=>{
 	const p1=raw.indexOf('<h4><font color=navy>');
 	const p2=raw.lastIndexOf('<hr>');
 	if (p1==-1||p2==-1) throw "error content";
 
-	const content=replaceChapterNumber(raw.substr(0,p2).substr(p1).trim()
+	const content=raw.substr(0,p2).substr(p1).trim()
 		.replace(/○/g,'〇')
-		.replace(/<br>/g,'\n').replace(/<br \/>/g,'\n').replace(/<\/font><\/h4>/g,''));
+		.replace(/<br>/g,'\n').replace(/<br \/>/g,'\n');
+		//.replace(/<\/font><\/h4>/g,''));
 
 	return content;
 }
@@ -57,18 +58,20 @@ const extractZip=fseq=>{
 
 	const chapters=[];
 
-	cnames.forEach(ch=>{
-		chapters.push( contents[ch].replace(/\r?\n/g,'\n') );
+	cnames.forEach((ch,idx)=>{
+		chapters.push( (idx+1)+'|'+contents[ch].replace(/\r?\n/g,'\n') );
 	});
 	return chapters;
 }
 
-// const redo={605:true,602:true,603:true,588:true}
+// const redo={674:true}
 for (let key in booknames) {
 	// if (!redo[key]) continue;
 	process.stdout.write('\r'+key+'     ');
 	const chapters=extractZip(key);
-	fs.writeFileSync('openlit/'+key+'.txt',chapters.join('\n'),'utf8')
+	const content=chapters.join('\n');
+	
+	fs.writeFileSync('openlit/'+key+'.txt',content,'utf8')
 }
 
 //fs.writeFileSync('readmes.txt',JSON.stringify(readmes),'utf8');
